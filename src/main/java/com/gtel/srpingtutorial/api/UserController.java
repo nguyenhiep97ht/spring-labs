@@ -1,9 +1,11 @@
 package com.gtel.srpingtutorial.api;
 
+import com.gtel.srpingtutorial.model.data.Airport;
 import com.gtel.srpingtutorial.model.request.AirportRequest;
 import com.gtel.srpingtutorial.model.response.AirportResponse;
 import com.gtel.srpingtutorial.service.AirportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,41 +19,28 @@ public class UserController {
     private AirportService airportService;
 
     @GetMapping
-    public List<AirportResponse> getAirports(@RequestParam int page, @RequestParam int size) {
-        return airportService.getAirports(page, size);
-    }
-
-    @RequestMapping(method = RequestMethod.HEAD)
-    public ResponseEntity countAirports() {
-        int count =  airportService.countAirports();
-
-        return ResponseEntity.ok().header("X-Total-Count", String.valueOf(count)).build();
+    public Page<Airport> getAirports(@RequestParam int page, @RequestParam int size) {
+        return airportService.getAirportsByPage(page, size);
     }
 
 
     @GetMapping("/{iata}")
-    public AirportResponse getAirport(@PathVariable String iata) {
-        return airportService.getAirport(iata);
+    public Airport getAirport(@PathVariable Long id) {
+        return (airportService.getAirportByIdNative(id));
     }
 
     @PostMapping
-    public void createAirport(@RequestBody AirportRequest airportRequest) {
-        airportService.createAirport(airportRequest);
+    public void createAirport(@RequestBody Airport airportRequest) {
+        airportService.saveAirport(airportRequest);
     }
 
-    @PutMapping("/{iata}")
-    public void updateAirport(@PathVariable String iata, @RequestBody AirportRequest airportRequest) {
-        airportService.updateAirports(iata, airportRequest);
+    @PutMapping("/{id}")
+    public void updateAirport(@PathVariable Long id, @RequestBody Airport airportRequest) {
+        airportService.updateAirport(id, airportRequest);
     }
 
-    @PatchMapping("/{iata}")
-    public void updatePatchAirport(@PathVariable String iata, @RequestBody AirportRequest airportRequest) {
-        airportService.updatePathAirports(iata, airportRequest);
-    }
-
-
-    @DeleteMapping("/{iata}")
-    public void deleteAirport(@PathVariable String iata) {
-        airportService.deleteAirport(iata);
+    @DeleteMapping("/{id}")
+    public void deleteAirport(@PathVariable Long id) {
+        airportService.deleteAirport(id);
     }
 }
