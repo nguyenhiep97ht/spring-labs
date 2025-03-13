@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: srping-tutorial
+  datasource:
+    url: jdbc:mysql://localhost:3306/jwt
+    username: root
+    password: 123456@A
+    jpa:
+      hibernate:
+        ddl-auto: <create | create-drop | update | validate | none>
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.MySQL8Dialect
+server:
+  port: 8080
+  context-path: /api
