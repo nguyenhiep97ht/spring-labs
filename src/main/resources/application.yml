@@ -5,6 +5,13 @@ spring:
     url: jdbc:mysql://localhost:3306/jwt
     username: root
     password: 123456@A
+    hikari:
+      connection-timeout: 60000
+      maximum-pool-size: 25
+      minimum-idle: 5
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      schema: public
     jpa:
       hibernate:
         ddl-auto: <create | create-drop | update | validate | none>
