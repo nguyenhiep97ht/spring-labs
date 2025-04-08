@@ -39,12 +39,12 @@ public class OTPService {
 
         if (otpData != null && otpData.getLastSentAt() != null) {
             if (otpData.getLastSentAt().plusSeconds(resendWaitTime).isAfter(LocalDateTime.now())) {
-                throw new RuntimeException("Please wait before requesting a new OTP");
+                throw new RuntimeException("vui long cho cung cap OTP");
             }
         }
 
         if (otpData != null && otpData.getDailyCount() >= maxDaily) {
-            throw new RuntimeException("Maximum OTP requests reached for today");
+            throw new RuntimeException("Dat so luong toi da otp trong ngay");
         }
 
         String otp = String.format("%06d", (int) (Math.random() * 1000000));
@@ -67,7 +67,7 @@ public class OTPService {
         otpCache.put(normalizedPhone, newOtpData, otpExpirationTime, TimeUnit.SECONDS);
 
         // gui otp qua system out, update email tai day
-        System.out.println("Sending OTP " + otp + " to " + normalizedPhone);
+        System.out.println("gui OTP " + otp + " den " + normalizedPhone);
 
         return otp;
     }
