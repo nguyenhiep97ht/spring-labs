@@ -66,7 +66,7 @@ public class OTPService {
 
         otpCache.put(normalizedPhone, newOtpData, otpExpirationTime, TimeUnit.SECONDS);
 
-        // TODO: Implement actual SMS sending here
+        // gui otp qua system out, update email tai day
         System.out.println("Sending OTP " + otp + " to " + normalizedPhone);
 
         return otp;
@@ -115,10 +115,10 @@ public class OTPService {
         OTPData otpData = otpCache.get(normalizedPhone);
 
         if (otpData == null || !otpData.isVerified()) {
-            throw new RuntimeException("OTP not verified");
+            throw new RuntimeException("OTP chua xac thuc");
         }
 
-        System.out.println("Updating password for " + normalizedPhone);
+        System.out.println("cap nhat mat khau thanh cong " + normalizedPhone);
 
         otpCache.remove(normalizedPhone);
     }
