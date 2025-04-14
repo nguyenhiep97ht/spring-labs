@@ -26,7 +26,7 @@ public class UserController {
 
     @GetMapping("/{iata}")
     public Airport getAirport(@PathVariable Long id) {
-        return (airportService.getAirportByIdNative(id));
+        return (airportService.getAirportById(id).get());
     }
 
     @PostMapping

@@ -1,7 +1,8 @@
 package com.gtel.srpingtutorial.model.request;
 
-import jakarta.validation.constraints.Pattern;
 import lombok.Data;
+
+import javax.validation.constraints.Pattern;
 
 @Data
 public class PasswordUpdateRequest {

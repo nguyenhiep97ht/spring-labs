@@ -1,5 +1,7 @@
 package com.gtel.srpingtutorial.service;
+import com.gtel.srpingtutorial.exception.ApplicationException;
 import com.gtel.srpingtutorial.model.data.OTPData;
+import com.gtel.srpingtutorial.utils.ERROR_CODE;
 import org.redisson.api.RFuture;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
@@ -16,16 +18,16 @@ public class OTPService {
     private final RedissonClient redissonClient;
 
     @Value("${otp.expiration-time}")
-    private int otpExpirationTime;
+    public static int otpExpirationTime;
 
     @Value("${otp.resend-wait-time}")
-    private int resendWaitTime;
+    public static int resendWaitTime;
 
     @Value("${otp.max-attempts}")
-    private int maxAttempts;
+    public static int maxAttempts;
 
     @Value("${otp.max-daily}")
-    private int maxDaily;
+    public static int maxDaily;
 
     public OTPService(RedissonClient redissonClient) {
         this.redissonClient = redissonClient;
@@ -39,12 +41,12 @@ public class OTPService {
 
         if (otpData != null && otpData.getLastSentAt() != null) {
             if (otpData.getLastSentAt().plusSeconds(resendWaitTime).isAfter(LocalDateTime.now())) {
-                throw new RuntimeException("vui long cho cung cap OTP");
+                throw new ApplicationException(ERROR_CODE.INVALID_REQUEST,"vui long cho cung cap OTP");
             }
         }
 
         if (otpData != null && otpData.getDailyCount() >= maxDaily) {
-            throw new RuntimeException("Dat so luong toi da otp trong ngay");
+            throw new ApplicationException(ERROR_CODE.INVALID_REQUEST,"Dat so luong toi da otp trong ngay");
         }
 
         String otp = String.format("%06d", (int) (Math.random() * 1000000));
@@ -79,27 +81,27 @@ public class OTPService {
         OTPData otpData = otpCache.get(normalizedPhone);
 
         if (otpData == null) {
-            throw new RuntimeException("OTP khong tim thay hoac het han");
+            throw new ApplicationException(ERROR_CODE.INVALID_REQUEST, "OTP khong tim thay hoac het han");
         }
 
         if (otpData.isVerified()) {
-            throw new RuntimeException("OTP da duoc su dung");
+            throw new ApplicationException(ERROR_CODE.INVALID_REQUEST, "OTP da duoc su dung");
         }
 
         if (otpData.getAttemptCount() >= maxAttempts) {
             otpCache.remove(normalizedPhone);
-            throw new RuntimeException("Qua so lan qui dinh, vui long tao moi otp");
+            throw new ApplicationException(ERROR_CODE.INVALID_REQUEST,"Qua so lan qui dinh, vui long tao moi otp");
         }
 
         if (otpData.getExpiresAt().isBefore(LocalDateTime.now())) {
             otpCache.remove(normalizedPhone);
-            throw new RuntimeException("OTP het han");
+            throw new ApplicationException(ERROR_CODE.INVALID_REQUEST,"OTP het han");
         }
 
         if (!otpData.getOtp().equals(otp)) {
             otpData.setAttemptCount(otpData.getAttemptCount() + 1);
             otpCache.put(normalizedPhone, otpData);
-            throw new RuntimeException("OTP khong hop le");
+            throw new ApplicationException(ERROR_CODE.INVALID_REQUEST, "OTP khong hop le");
         }
 
         otpData.setVerified(true);
@@ -115,7 +117,7 @@ public class OTPService {
         OTPData otpData = otpCache.get(normalizedPhone);
 
         if (otpData == null || !otpData.isVerified()) {
-            throw new RuntimeException("OTP chua xac thuc");
+            throw new ApplicationException(ERROR_CODE.INVALID_REQUEST,"OTP chua xac thuc");
         }
 
         System.out.println("cap nhat mat khau thanh cong " + normalizedPhone);
@@ -123,8 +125,15 @@ public class OTPService {
         otpCache.remove(normalizedPhone);
     }
 
-    private String normalizePhoneNumber(String phoneNumber) {
+    public String normalizePhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            throw new ApplicationException(ERROR_CODE.INVALID_REQUEST,"So dien thoai khong hop le");
+        }
         String digits = phoneNumber.replaceAll("[^0-9]", "");
+        // Kiểm tra độ dài tối thiểu/tối đa
+        if (digits.length() < 9 || digits.length() > 15) {
+            throw new ApplicationException(ERROR_CODE.INVALID_REQUEST,"So dien thoai phai tu 9 den 15 chu so");
+        }
 
         if (digits.startsWith("0")) {
             return "84" + digits.substring(1);
@@ -140,7 +149,7 @@ public class OTPService {
     public void resetDailyCounts() {
         RMapCache<String, OTPData> otpCache = redissonClient.getMapCache("otpCache");
 
-        
+
         RFuture<Iterator<String>> keysFuture = (RFuture<Iterator<String>>) otpCache.keySet().iterator();
         keysFuture.whenComplete((iterator, exception) -> {
             if (exception != null) {
@@ -152,7 +161,7 @@ public class OTPService {
                 OTPData otpData = otpCache.get(key);
                 if (otpData != null) {
                     otpData.setDailyCount(0);
-                    otpCache.put(key, otpData); 
+                    otpCache.put(key, otpData);
                 }
             }
         });

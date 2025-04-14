@@ -1,8 +1,9 @@
 package com.gtel.srpingtutorial.model.request;
 
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+
 import lombok.Data;
+
+import javax.validation.constraints.Pattern;
 
 @Data
 public class OTPRequest {
